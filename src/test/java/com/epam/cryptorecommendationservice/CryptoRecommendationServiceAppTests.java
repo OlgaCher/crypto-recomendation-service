@@ -1,10 +1,10 @@
-package com.epam.cryptorecomendationservice;
+package com.epam.cryptorecommendationservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class CryptoRecomendationServiceAppApplicationTests {
+class CryptoRecommendationServiceAppTests {
 
 	@Test
 	void contextLoads() {
