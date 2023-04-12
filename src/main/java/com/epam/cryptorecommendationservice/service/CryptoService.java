@@ -1,6 +1,7 @@
 package com.epam.cryptorecommendationservice.service;
 
 import com.epam.cryptorecommendationservice.model.Crypto;
+import com.epam.cryptorecommendationservice.model.NormalisedCrypto;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +16,7 @@ public interface CryptoService {
 
     Crypto getOldestCrypto(String cryptoName);
 
-    List<Crypto> getDescSortedCryptosByRange(String cryptoName);
+    List<NormalisedCrypto> getDescSortedCryptosByRange();
 
     Crypto getCryptoWithHighestRangeByDate(LocalDate date);
 }

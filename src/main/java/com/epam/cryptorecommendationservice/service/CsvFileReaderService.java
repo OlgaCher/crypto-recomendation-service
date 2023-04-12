@@ -1,5 +1,10 @@
 package com.epam.cryptorecommendationservice.service;
 
+import com.epam.cryptorecommendationservice.model.Crypto;
+
+import java.util.List;
+
 public interface CsvFileReaderService {
-    byte[] rearFile(String filePath);
+    List<Crypto> readFileByName(String filePath);
+    List<String> getCryptoNames();
 }
