@@ -1,13 +1,12 @@
 package com.epam.cryptorecommendationservice.service;
 
 import com.epam.cryptorecommendationservice.exceptions.CsvFileReaderServiceException;
-import com.epam.cryptorecommendationservice.model.Crypto;
+import com.epam.cryptorecommendationservice.model.CryptoItem;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,14 +19,14 @@ class CsvFileReaderServiceImplTest {
     private String testRegex = "^[\\w-]+_values\\.csv$";
     private CsvFileReaderService testedInstance = new CsvFileReaderServiceImpl();
 
-    private List<Crypto> expectedCryptos = new ArrayList<>() {{
-        add(new Crypto(LocalDateTime.of(2022, 1, 12,0,0),
+    private List<CryptoItem> expectedCryptos = new ArrayList<>() {{
+        add(new CryptoItem(LocalDateTime.of(2022, 1, 1, 5, 0, 0),
                 "BTC",
                 new BigDecimal("46813.21")));
-        add(new Crypto(LocalDateTime.of(2022, 1, 1,0,0),
+        add(new CryptoItem(LocalDateTime.of(2022, 1, 1, 8, 0, 0),
                 "BTC",
                 new BigDecimal("46979.61")));
-        add(new Crypto(LocalDateTime.of(2022, 1, 1,0,0),
+        add(new CryptoItem(LocalDateTime.of(2022, 1, 1, 11, 0, 0),
                 "BTC",
                 new BigDecimal("47143.98")));
     }};
@@ -45,7 +44,7 @@ class CsvFileReaderServiceImplTest {
     @Test
     void should_parse_csv_file_without_exception() throws IOException {
         ReflectionTestUtils.setField(testedInstance, "directoryPath", testDirectoryPath);
-        List<Crypto> actualList = testedInstance.getCryptosByName("BTC");
+        List<CryptoItem> actualList = testedInstance.getCryptosByName("BTC").getCryptoItems();
         assertNotNull(actualList);
         assertEquals(expectedCryptos, actualList);
     }

@@ -1,6 +1,6 @@
 package com.epam.cryptorecommendationservice.controller;
 
-import com.epam.cryptorecommendationservice.model.Crypto;
+import com.epam.cryptorecommendationservice.model.CryptoItem;
 import com.epam.cryptorecommendationservice.service.CryptoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ class CryptoControllerTest {
     @MockBean
     private CryptoService cryptoService;
 
-    private Crypto crypto = new Crypto(LocalDateTime.of(2022, 1, 1, 4, 0, 0),
+    private CryptoItem crypto = new CryptoItem(LocalDateTime.of(2022, 1, 1, 4, 0, 0),
             "BTC",
             new BigDecimal("46813.21"));
 

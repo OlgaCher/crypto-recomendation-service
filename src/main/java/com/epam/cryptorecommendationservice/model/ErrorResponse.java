@@ -1,11 +1,11 @@
-package com.epam.cryptorecommendationservice.dto;
+package com.epam.cryptorecommendationservice.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public class ErrorResponseDto {
+public class ErrorResponse {
     private final String errorCode;
     private final String errorMessage;
 }

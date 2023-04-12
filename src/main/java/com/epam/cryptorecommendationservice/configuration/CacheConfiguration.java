@@ -12,9 +12,9 @@ import java.util.Arrays;
 @EnableCaching
 public class CacheConfiguration {
     @Bean
-    public CacheManager cacheManager(){
+    public CacheManager cacheManager() {
         ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
-        cacheManager.setCacheNames(Arrays.asList("preloadFiles"));
+        cacheManager.setCacheNames(Arrays.asList("preloadFiles", "preloadCryptoNames"));
         return cacheManager;
     }
 }

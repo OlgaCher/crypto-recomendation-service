@@ -2,6 +2,7 @@ package com.epam.cryptorecommendationservice.service;
 
 import com.epam.cryptorecommendationservice.exceptions.CsvFileReaderServiceException;
 import com.epam.cryptorecommendationservice.model.Crypto;
+import com.epam.cryptorecommendationservice.model.CryptoItem;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
@@ -18,7 +19,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,7 +32,7 @@ public class CsvFileReaderServiceImpl implements CsvFileReaderService {
     @Value("${filename.regex}")
     private String fileNameRegex;
 
-
+    @Cacheable("preloadCryptoNames")
     @Override
     public List<String> getCryptoNames() {
         File[] files = getAllCsvFilesFromPathByRegex(directoryPath, fileNameRegex);
@@ -42,24 +42,25 @@ public class CsvFileReaderServiceImpl implements CsvFileReaderService {
 
     @Cacheable("preloadFiles")
     @Override
-    public List<Crypto> getCryptosByName(String cryptoName) {
-        List<Crypto> cryptos = new ArrayList<>();
+    public Crypto getCryptosByName(String cryptoName) {
+        Crypto crypto;
 
         try (CSVReader reader = new CSVReaderBuilder(new FileReader(String.format("%s%s_values.csv", directoryPath, cryptoName))).
                 withSkipLines(TABLE_HEADER).
                 build()) {
-            cryptos = reader.readAll().stream().
+
+            crypto = Crypto.builder().cryptoItems(reader.readAll().stream().
                     map(row -> {
-                        Crypto crypto = new Crypto();
-                        crypto.setDateTime(LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.valueOf(row[0])), ZoneId.systemDefault()));
-                        crypto.setCryptoName(row[1]);
-                        crypto.setPrice(new BigDecimal(row[2]));
-                        return crypto;
-                    }).collect(Collectors.toList());
+                        CryptoItem cryptoItem = new CryptoItem();
+                        cryptoItem.setDateTime(LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.valueOf(row[0])), ZoneId.systemDefault()));
+                        cryptoItem.setCryptoName(row[1]);
+                        cryptoItem.setPrice(new BigDecimal(row[2]));
+                        return cryptoItem;
+                    }).collect(Collectors.toList())).build();
         } catch (CsvException | IOException e) {
             throw new CsvFileReaderServiceException(String.format("Unable to parse .csv file. File path: %s", directoryPath));
         }
-        return cryptos;
+        return crypto;
     }
 
     private static File[] getAllCsvFilesFromPathByRegex(String directoryPath, String fileNameRegex) {

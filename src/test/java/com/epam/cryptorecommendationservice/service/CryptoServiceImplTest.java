@@ -1,17 +1,15 @@
 package com.epam.cryptorecommendationservice.service;
 
 import com.epam.cryptorecommendationservice.model.Crypto;
-import com.epam.cryptorecommendationservice.model.NormalizedCrypto;
+import com.epam.cryptorecommendationservice.model.CryptoItem;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,71 +24,74 @@ class CryptoServiceImplTest {
 
     @InjectMocks
     private CryptoServiceImpl cryptoService;
-    private List<Crypto> expectedCryptosBTC = new ArrayList<>() {{
-        add(new Crypto(LocalDateTime.of(2022, 1, 1, 4, 0, 0),
+    private Crypto expectedCryptosBTC = Crypto.builder().cryptoItems(new ArrayList<>() {{
+        add(new CryptoItem(LocalDateTime.of(2022, 1, 1, 4, 0, 0),
                 "BTC",
                 new BigDecimal("46813.21")));
-        add(new Crypto(LocalDateTime.of(2022, 1, 1, 4, 0, 0),
+        add(new CryptoItem(LocalDateTime.of(2022, 1, 1, 4, 0, 0),
                 "BTC",
                 new BigDecimal("46979.61")));
-        add(new Crypto(LocalDateTime.of(2022, 2, 1, 4, 0, 0),
+        add(new CryptoItem(LocalDateTime.of(2022, 2, 1, 4, 0, 0),
                 "BTC",
                 new BigDecimal("47143.98")));
-    }};
-    private List<Crypto> expectedCryptosETH = new ArrayList<>() {{
-        add(new Crypto(LocalDateTime.of(2022, 1, 1, 4, 0, 0),
+    }}).build();
+    private Crypto expectedCryptosETH = Crypto.builder().cryptoItems(new ArrayList<>() {{
+        add(new CryptoItem(LocalDateTime.of(2022, 1, 1, 4, 0, 0),
                 "ETH",
                 new BigDecimal("2652.21")));
-        add(new Crypto(LocalDateTime.of(2022, 2, 1, 4, 0, 0),
+        add(new CryptoItem(LocalDateTime.of(2022, 2, 1, 4, 0, 0),
                 "ETH",
                 new BigDecimal("5636.98")));
-    }};
-
-    private NormalizedCrypto normalisedCrypto = NormalizedCrypto.builder().
-            cryptoName("BTC").
-            normalisedPrice(new BigDecimal(5682.2)).
-            build();
+    }}).build();
 
 
     @Test
-    void should_return_crypto_with_max_price() throws IOException {
+    void should_return_crypto_with_max_price() {
         when(fileReader.getCryptosByName("BTC")).thenReturn(expectedCryptosBTC);
-        Crypto actualResult = cryptoService.getMaxCrypto("BTC");
-        assertEquals(expectedCryptosBTC.get(2), actualResult);
+        CryptoItem actualResult = cryptoService.getMaxCrypto("BTC");
+        assertEquals(expectedCryptosBTC.getCryptoItems().get(2), actualResult);
     }
 
     @Test
-    void should_return_crypto_with_min_price() throws IOException {
+    void should_return_crypto_with_min_price() {
         when(fileReader.getCryptosByName("BTC")).thenReturn(expectedCryptosBTC);
-        Crypto actualResult = cryptoService.getMinCrypto("BTC");
-        assertEquals(expectedCryptosBTC.get(0), actualResult);
+        CryptoItem actualResult = cryptoService.getMinCrypto("BTC");
+        assertEquals(expectedCryptosBTC.getCryptoItems().get(0), actualResult);
     }
 
     @Test
-    void should_return_crypto_with_newest_price() throws IOException {
+    void should_return_crypto_with_newest_price() {
         when(fileReader.getCryptosByName("BTC")).thenReturn(expectedCryptosBTC);
-        Crypto actualResult = cryptoService.getNewestCrypto("BTC");
-        assertEquals(expectedCryptosBTC.get(2), actualResult);
+        CryptoItem actualResult = cryptoService.getNewestCrypto("BTC");
+        assertEquals(expectedCryptosBTC.getCryptoItems().get(2), actualResult);
     }
 
     @Test
-    void should_return_crypto_with_oldest_price() throws IOException {
+    void should_return_crypto_with_oldest_price() {
         when(fileReader.getCryptosByName("BTC")).thenReturn(expectedCryptosBTC);
-        Crypto actualResult = cryptoService.getOldestCrypto("BTC");
-        assertEquals(expectedCryptosBTC.get(0), actualResult);
+        CryptoItem actualResult = cryptoService.getOldestCrypto("BTC");
+        assertEquals(expectedCryptosBTC.getCryptoItems().get(0), actualResult);
     }
 
     @Test
-    void should_return_desc_sorted_cryptos_by_normalized_range() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method privateMethod = CryptoServiceImpl.class.getDeclaredMethod("getNormalisedCrypto", String.class);
-        privateMethod.setAccessible(true);
-        when(privateMethod.invoke(cryptoService, "BTC")).thenReturn(normalisedCrypto);
+    void should_return_desc_sorted_cryptos_by_normalized_range() {
+        when(fileReader.getCryptoNames()).thenReturn(List.of("BTC", "ETH"));
+        when(fileReader.getCryptosByName("BTC")).thenReturn(expectedCryptosBTC);
         when(fileReader.getCryptosByName("ETH")).thenReturn(expectedCryptosETH);
-        List<NormalizedCrypto> normalisedCryptos = cryptoService.getDescSortedCryptosByRange();
-
+        List<Crypto> actualResult = cryptoService.getDescSortedCryptosByRange();
+        List<Crypto> expectedResult = new ArrayList<>() {{
+            add(expectedCryptosETH);
+            add(expectedCryptosBTC);
+        }};
+        assertEquals(expectedResult, actualResult);
     }
 
     @Test
-    void getCryptoWithHighestRangeByDate() {
+    void should_return_crypto_with_highest_range_by_date() {
+        when(fileReader.getCryptoNames()).thenReturn(List.of("BTC", "ETH"));
+        when(fileReader.getCryptosByName("BTC")).thenReturn(expectedCryptosBTC);
+        when(fileReader.getCryptosByName("ETH")).thenReturn(expectedCryptosETH);
+        Crypto actualResult = cryptoService.getCryptoWithHighestRangeByDate(LocalDate.of(2022, 1, 1));
+        assertEquals(expectedCryptosETH, actualResult);
     }
 }

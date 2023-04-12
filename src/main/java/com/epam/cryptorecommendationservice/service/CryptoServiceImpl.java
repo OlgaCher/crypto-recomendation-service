@@ -1,13 +1,10 @@
 package com.epam.cryptorecommendationservice.service;
 
 import com.epam.cryptorecommendationservice.model.Crypto;
-import com.epam.cryptorecommendationservice.model.NormalizedCrypto;
+import com.epam.cryptorecommendationservice.model.CryptoItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -16,75 +13,50 @@ import java.util.stream.Collectors;
 @Service
 public class CryptoServiceImpl implements CryptoService {
     @Autowired
-    CsvFileReaderService csvFileReaderService;
+    private CsvFileReaderService csvFileReaderService;
 
     @Override
-    public Crypto getMaxCrypto(String cryptoName) throws IOException {
-        List<Crypto> cryptos = csvFileReaderService.getCryptosByName(cryptoName);
-        return cryptos.stream().max(Comparator.comparing(Crypto::getPrice)).get();
+    public CryptoItem getMaxCrypto(String cryptoName) {
+        return csvFileReaderService.getCryptosByName(cryptoName).getWithMaxPrice();
     }
 
     @Override
-    public Crypto getMinCrypto(String cryptoName) throws IOException {
-        List<Crypto> cryptos = csvFileReaderService.getCryptosByName(cryptoName);
-        return cryptos.stream().min(Comparator.comparing(Crypto::getPrice)).get();
+    public CryptoItem getMinCrypto(String cryptoName) {
+        return csvFileReaderService.getCryptosByName(cryptoName).getWithMinPrice();
     }
 
     @Override
-    public Crypto getNewestCrypto(String cryptoName) throws IOException {
-        List<Crypto> cryptos = csvFileReaderService.getCryptosByName(cryptoName);
-        return cryptos.stream().max(Comparator.comparing(Crypto::getDateTime)).get();
+    public CryptoItem getNewestCrypto(String cryptoName) {
+        return csvFileReaderService.getCryptosByName(cryptoName).getNewest();
     }
 
     @Override
-    public Crypto getOldestCrypto(String cryptoName) throws IOException {
-        List<Crypto> cryptos = csvFileReaderService.getCryptosByName(cryptoName);
-        return cryptos.stream().min(Comparator.comparing(Crypto::getDateTime)).get();
+    public CryptoItem getOldestCrypto(String cryptoName) {
+        return csvFileReaderService.getCryptosByName(cryptoName).getOldest();
     }
 
     @Override
-    public List<NormalizedCrypto> getDescSortedCryptosByRange() {
-        return csvFileReaderService.getCryptoNames().stream().map(this::getNormalisedCrypto).
-                sorted(Comparator.comparing(NormalizedCrypto::getNormalisedPrice).reversed()).
-                collect(Collectors.toList());
+    public List<Crypto> getDescSortedCryptosByRange() {
+        return descendingSort(getAllCryptos());
     }
 
     @Override
     public Crypto getCryptoWithHighestRangeByDate(LocalDate date) {
-//        return csvFileReaderService.getCryptoNames()
-//                .stream()
-//                .collect(Collectors.groupingBy(Crypto::getDateTime)).max(Comparator.comparing(NormalisedCrypto::getNormalisedPrice))
-        return null;
+        List<Crypto> cryptosByDate = getAllCryptos().stream()
+                .map(crypto -> Crypto.builder().cryptoItems(crypto.filterBy(date)).build())
+                .collect(Collectors.toList());
+        return descendingSort(cryptosByDate).stream().findFirst().get();
     }
-
-    private NormalizedCrypto getNormalisedCrypto(String cryptoName) {
-        List<Crypto> cryptos = csvFileReaderService.getCryptosByName(cryptoName);
-        BigDecimal maxPrice = getMaxPrice(cryptos);
-        BigDecimal minPrice = getMinPrice(cryptos);
-        return NormalizedCrypto.builder().
-                cryptoName(cryptoName).
-                normalisedPrice(maxPrice.subtract(minPrice).divide(minPrice, 2, RoundingMode.HALF_UP)).
-                build();
+    private static List<Crypto> descendingSort(List<Crypto> cryptos) {
+        return cryptos.stream().
+                sorted(Comparator.comparing(Crypto::getNormalized).reversed()).
+                collect(Collectors.toList());
     }
-
-    private NormalizedCrypto getNormalizedCryptoByDate(String cryptoName, LocalDate date) throws IOException {
-        List<Crypto> cryptos = csvFileReaderService.getCryptosByName(cryptoName);
-//        List<Crypto> filteredByDate = cryptos.stream().collect(Collectors.groupingBy(Crypto::getDateTime)).get()
-//                .filter(d -> d.getDateTime().equals(date)).collect(Collectors.toList());
-//        BigDecimal maxPrice = getMaxPrice(filteredByDate);
-//        BigDecimal minPrice = getMinPrice(filteredByDate);
-        return NormalizedCrypto.builder().
-                cryptoName(cryptoName).
-//                normalisedPrice(maxPrice.subtract(minPrice).divide(minPrice, 2, RoundingMode.HALF_UP)).
-        build();
-    }
-
-    private static BigDecimal getMinPrice(List<Crypto> cryptos) {
-        return cryptos.stream().min(Comparator.comparing(Crypto::getPrice)).get().getPrice();
-    }
-
-    private static BigDecimal getMaxPrice(List<Crypto> cryptos) {
-        return cryptos.stream().max(Comparator.comparing(Crypto::getPrice)).get().getPrice();
+    private List<Crypto> getAllCryptos() {
+        return csvFileReaderService.getCryptoNames()
+                .stream()
+                .map(name -> csvFileReaderService.getCryptosByName(name))
+                .collect(Collectors.toList());
     }
 
 }
