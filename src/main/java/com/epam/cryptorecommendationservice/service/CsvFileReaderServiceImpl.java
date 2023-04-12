@@ -16,7 +16,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,27 +29,20 @@ public class CsvFileReaderServiceImpl implements CsvFileReaderService {
     @Value("${directory.path}")
     private String directoryPath;
 
-    @Value("${file.extension}")
-    private String fileExtension;
-
     @Value("${filename.regex}")
     private String fileNameRegex;
 
 
+    @Override
     public List<String> getCryptoNames() {
-        File[] files = getAllCsvFilesFromPathByRegex(directoryPath);
+        File[] files = getAllCsvFilesFromPathByRegex(directoryPath, fileNameRegex);
         return Stream.of(files).map(file ->
                 file.getName().substring(0, file.getName().lastIndexOf("_"))).collect(Collectors.toList());
     }
 
-    private File[] getAllCsvFilesFromPathByRegex(String directoryPath) {
-        FileFilter fileFilter = new RegexFileFilter(fileNameRegex);
-        return new File(directoryPath).listFiles(fileFilter);
-    }
-
     @Cacheable("preloadFiles")
     @Override
-    public List<Crypto> readFileByName(String cryptoName) {
+    public List<Crypto> getCryptosByName(String cryptoName) {
         List<Crypto> cryptos = new ArrayList<>();
 
         try (CSVReader reader = new CSVReaderBuilder(new FileReader(String.format("%s%s_values.csv", directoryPath, cryptoName))).
@@ -58,14 +51,20 @@ public class CsvFileReaderServiceImpl implements CsvFileReaderService {
             cryptos = reader.readAll().stream().
                     map(row -> {
                         Crypto crypto = new Crypto();
-                        crypto.setDate(LocalDate.ofInstant(Instant.ofEpochMilli(Long.valueOf(row[0])), ZoneId.systemDefault()));
+                        crypto.setDateTime(LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.valueOf(row[0])), ZoneId.systemDefault()));
                         crypto.setCryptoName(row[1]);
                         crypto.setPrice(new BigDecimal(row[2]));
                         return crypto;
                     }).collect(Collectors.toList());
-        } catch (IOException | CsvException e) {
+        } catch (CsvException | IOException e) {
             throw new CsvFileReaderServiceException(String.format("Unable to parse .csv file. File path: %s", directoryPath));
         }
         return cryptos;
     }
+
+    private static File[] getAllCsvFilesFromPathByRegex(String directoryPath, String fileNameRegex) {
+        FileFilter fileFilter = new RegexFileFilter(fileNameRegex);
+        return new File(directoryPath).listFiles(fileFilter);
+    }
+
 }

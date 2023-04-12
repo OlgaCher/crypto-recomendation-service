@@ -4,10 +4,12 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Builder
 @Data
-public class NormalisedCrypto {
+public class NormalizedCrypto {
     private String cryptoName;
     private BigDecimal normalisedPrice;
+    private LocalDate date;
 }

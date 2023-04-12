@@ -1,22 +1,23 @@
 package com.epam.cryptorecommendationservice.service;
 
 import com.epam.cryptorecommendationservice.model.Crypto;
-import com.epam.cryptorecommendationservice.model.NormalisedCrypto;
+import com.epam.cryptorecommendationservice.model.NormalizedCrypto;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
 public interface CryptoService {
 
-    Crypto getMaxCrypto(String cryptoName);
+    Crypto getMaxCrypto(String cryptoName) throws IOException;
 
-    Crypto getMinCrypto(String cryptoName);
+    Crypto getMinCrypto(String cryptoName) throws IOException;
 
-    Crypto getNewestCrypto(String cryptoName);
+    Crypto getNewestCrypto(String cryptoName) throws IOException;
 
-    Crypto getOldestCrypto(String cryptoName);
+    Crypto getOldestCrypto(String cryptoName) throws IOException;
 
-    List<NormalisedCrypto> getDescSortedCryptosByRange();
+    List<NormalizedCrypto> getDescSortedCryptosByRange();
 
     Crypto getCryptoWithHighestRangeByDate(LocalDate date);
 }
