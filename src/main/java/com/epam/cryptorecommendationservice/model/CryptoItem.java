@@ -11,12 +11,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CryptoItem {
-    //@CsvBindByName(column = "timestamp")
     private LocalDateTime dateTime;
-    // @CsvBindByName(column = "symbol")
     private String cryptoName;
-    //  @CsvBindByName(column = "price")
-    // @CsvNumber(value = "#0.00")
     private BigDecimal price;
 
 }

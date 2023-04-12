@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -22,22 +21,22 @@ public class CryptoController {
     private CryptoService cryptoService;
 
     @GetMapping("{cryptoName}/max")
-    public CryptoItem getMaxCryptoPrice(@PathVariable String cryptoName) throws IOException {
+    public CryptoItem getMaxCryptoPrice(@PathVariable String cryptoName) {
         return cryptoService.getMaxCrypto(cryptoName);
     }
 
     @GetMapping("{cryptoName}/min")
-    public CryptoItem getMinCryptoPrice(@PathVariable String cryptoName) throws IOException {
+    public CryptoItem getMinCryptoPrice(@PathVariable String cryptoName) {
         return cryptoService.getMinCrypto(cryptoName);
     }
 
     @GetMapping("{cryptoName}/newest")
-    public CryptoItem getNewestCryptoPrice(@PathVariable String cryptoName) throws IOException {
+    public CryptoItem getNewestCryptoPrice(@PathVariable String cryptoName) {
         return cryptoService.getNewestCrypto(cryptoName);
     }
 
     @GetMapping("{cryptoName}/oldest")
-    public CryptoItem getOldestCryptoPrice(@PathVariable String cryptoName) throws IOException {
+    public CryptoItem getOldestCryptoPrice(@PathVariable String cryptoName) {
         return cryptoService.getOldestCrypto(cryptoName);
     }
 

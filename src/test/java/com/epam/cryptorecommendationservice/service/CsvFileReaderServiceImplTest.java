@@ -1,7 +1,9 @@
 package com.epam.cryptorecommendationservice.service;
 
 import com.epam.cryptorecommendationservice.exceptions.CsvFileReaderServiceException;
+import com.epam.cryptorecommendationservice.exceptions.UnsupportedCryptoException;
 import com.epam.cryptorecommendationservice.model.CryptoItem;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -17,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class CsvFileReaderServiceImplTest {
     private String testDirectoryPath = "src/test/resources/file/";
     private String testRegex = "^[\\w-]+_values\\.csv$";
+    private String fileNamePattern = "%s%s_values.csv";
+    private String invalidFileNamePattern = "%s%s_invalid.csv";
     private CsvFileReaderService testedInstance = new CsvFileReaderServiceImpl();
 
     private List<CryptoItem> expectedCryptos = new ArrayList<>() {{
@@ -33,17 +37,21 @@ class CsvFileReaderServiceImplTest {
 
     private List<String> expectedCryptoNames = Arrays.asList("BTC", "ETH");
 
-    @Test
-    void should_return_crypto_names_from_file_folder() {
+    @BeforeEach
+    void setUp() {
         ReflectionTestUtils.setField(testedInstance, "directoryPath", testDirectoryPath);
         ReflectionTestUtils.setField(testedInstance, "fileNameRegex", testRegex);
+    }
+
+    @Test
+    void should_return_crypto_names_from_file_folder() {
         List<String> actualCryptoNames = testedInstance.getCryptoNames();
         assertEquals(expectedCryptoNames, actualCryptoNames);
     }
 
     @Test
     void should_parse_csv_file_without_exception() throws IOException {
-        ReflectionTestUtils.setField(testedInstance, "directoryPath", testDirectoryPath);
+        ReflectionTestUtils.setField(testedInstance, "fileNamePattern", fileNamePattern);
         List<CryptoItem> actualList = testedInstance.getCryptosByName("BTC").getCryptoItems();
         assertNotNull(actualList);
         assertEquals(expectedCryptos, actualList);
@@ -51,9 +59,18 @@ class CsvFileReaderServiceImplTest {
 
     @Test
     void should_throw_csv_file_reader_exception_when_unable_to_parse_csv_file() {
+        ReflectionTestUtils.setField(testedInstance, "fileNamePattern", invalidFileNamePattern);
         assertThrows(CsvFileReaderServiceException.class, () -> {
-                    testedInstance.getCryptosByName("NOT_EXISTS");
+                    testedInstance.getCryptosByName("BTC");
                 }
         );
+    }
+
+    @Test
+    void should_throw_unsupported_crypto_exception() {
+        ReflectionTestUtils.setField(testedInstance, "fileNamePattern", fileNamePattern);
+        assertThrows(UnsupportedCryptoException.class, () -> {
+            testedInstance.getCryptosByName("FGT");
+        });
     }
 }

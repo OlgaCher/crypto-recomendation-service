@@ -1,6 +1,7 @@
 package com.epam.cryptorecommendationservice.service;
 
 import com.epam.cryptorecommendationservice.exceptions.CsvFileReaderServiceException;
+import com.epam.cryptorecommendationservice.exceptions.UnsupportedCryptoException;
 import com.epam.cryptorecommendationservice.model.Crypto;
 import com.epam.cryptorecommendationservice.model.CryptoItem;
 import com.opencsv.CSVReader;
@@ -31,6 +32,8 @@ public class CsvFileReaderServiceImpl implements CsvFileReaderService {
 
     @Value("${filename.regex}")
     private String fileNameRegex;
+    @Value("${name.pattern}")
+    private String fileNamePattern;
 
     @Cacheable("preloadCryptoNames")
     @Override
@@ -44,8 +47,10 @@ public class CsvFileReaderServiceImpl implements CsvFileReaderService {
     @Override
     public Crypto getCryptosByName(String cryptoName) {
         Crypto crypto;
-
-        try (CSVReader reader = new CSVReaderBuilder(new FileReader(String.format("%s%s_values.csv", directoryPath, cryptoName))).
+        if (!getCryptoNames().contains(cryptoName.toUpperCase())){
+            throw new UnsupportedCryptoException(String.format("We are currently don't support this crypto: %s",cryptoName.toUpperCase()));
+        }
+        try (CSVReader reader = new CSVReaderBuilder(new FileReader(String.format(fileNamePattern, directoryPath, cryptoName))).
                 withSkipLines(TABLE_HEADER).
                 build()) {
 
