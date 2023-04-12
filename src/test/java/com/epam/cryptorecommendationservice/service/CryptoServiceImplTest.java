@@ -43,6 +43,12 @@ class CryptoServiceImplTest {
                 "ETH",
                 new BigDecimal("5636.98")));
     }}).build();
+    private Crypto expectedHighest = Crypto.builder().cryptoItems(new ArrayList<>() {{
+        add(new CryptoItem(LocalDateTime.of(2022, 2, 1, 4, 0, 0),
+                "BTC",
+                new BigDecimal("47143.98")));
+    }}).build();
+
 
 
     @Test
@@ -91,7 +97,7 @@ class CryptoServiceImplTest {
         when(fileReader.getCryptoNames()).thenReturn(List.of("BTC", "ETH"));
         when(fileReader.getCryptosByName("BTC")).thenReturn(expectedCryptosBTC);
         when(fileReader.getCryptosByName("ETH")).thenReturn(expectedCryptosETH);
-        Crypto actualResult = cryptoService.getCryptoWithHighestRangeByDate(LocalDate.of(2022, 1, 1));
-        assertEquals(expectedCryptosETH, actualResult);
+        Crypto actualResult = cryptoService.getCryptoWithHighestRangeByDate(LocalDate.of(2022, 2, 1));
+        assertEquals(expectedHighest, actualResult);
     }
 }
